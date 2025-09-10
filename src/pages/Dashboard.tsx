@@ -5,8 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { useDeviceStore } from '@/stores/deviceStore';
 import { useMqttService } from '@/hooks/useMqttService';
 import { useAuthStore } from '@/stores/authStore';
-import { WidgetCard } from '@/components/widgets/WidgetCard';
 import { Widget, WidgetType } from '@/types';
+import BuilderCanvas from '@/components/builder/BuilderCanvas';
+import WidgetPalette from '@/components/builder/WidgetPalette';
+import WidgetConfigPanel from '@/components/builder/WidgetConfigPanel';
 import { 
   Plus, 
   Edit3, 
@@ -107,6 +109,7 @@ export default function Dashboard() {
   const [isBuilderMode, setIsBuilderMode] = useState(false);
   const [widgets, setWidgets] = useState<Widget[]>(mockWidgets);
   const [sensorValues, setSensorValues] = useState<Record<string, any>>({});
+  const [selectedWidget, setSelectedWidget] = useState<Widget | null>(null);
   
   const { activeDevice, devices } = useDeviceStore();
   const { messages, publish } = useMqttService();
@@ -144,7 +147,7 @@ export default function Dashboard() {
       title: `New ${type}`,
       deviceId: activeDevice?.id || 'esp32-001',
       mqttTopic: 'saphari/sensors/new',
-      position: { x: 0, y: 0, w: 2, h: 2 },
+      position: { x: 0, y: 0, w: 3, h: 3 },
       config: { label: `New ${type}` },
       createdAt: new Date(),
     };
@@ -154,6 +157,17 @@ export default function Dashboard() {
 
   const removeWidget = (widgetId: string) => {
     setWidgets(prev => prev.filter(w => w.id !== widgetId));
+    if (selectedWidget?.id === widgetId) {
+      setSelectedWidget(null);
+    }
+  };
+
+  const updateWidget = (updatedWidget: Widget) => {
+    setWidgets(prev => prev.map(w => w.id === updatedWidget.id ? updatedWidget : w));
+  };
+
+  const handleLayoutChange = (updatedWidgets: Widget[]) => {
+    setWidgets(updatedWidgets);
   };
 
   const onlineDevices = devices.filter(d => d.status === 'ONLINE').length;
@@ -267,74 +281,52 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Widget Palette (Builder Mode) */}
-      {isBuilderMode && (
-        <Card className="bg-gradient-card border-widget-border">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Plus className="w-4 h-4" />
-              <span>Add Widgets</span>
-            </CardTitle>
-            <CardDescription>
-              Drag and drop widgets to customize your dashboard
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => addWidget('GAUGE')}
-              >
-                <Gauge className="w-4 h-4 mr-2" />
-                Gauge
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => addWidget('SWITCH')}
-              >
-                <Zap className="w-4 h-4 mr-2" />
-                Switch
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => addWidget('CHART')}
-              >
-                <Activity className="w-4 h-4 mr-2" />
-                Chart
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => addWidget('TEXT_VALUE')}
-              >
-                <span className="w-4 h-4 mr-2 text-xs font-bold">T</span>
-                Text Value
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Widgets Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {widgets.map(widget => (
-          <div 
-            key={widget.id}
-            className={`col-span-${widget.position.w} row-span-${widget.position.h}`}
-          >
-            <WidgetCard
-              widget={widget}
-              value={sensorValues[widget.mqttTopic]}
-              onUpdate={(value) => handleWidgetUpdate(widget.id, value)}
-              onDelete={isBuilderMode ? () => removeWidget(widget.id) : undefined}
-              onEdit={isBuilderMode ? () => console.log('Edit widget', widget.id) : undefined}
-            />
+      {/* Builder Mode Layout */}
+      {isBuilderMode ? (
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Widget Palette */}
+          <div className="lg:col-span-1">
+            <WidgetPalette addWidget={addWidget} />
+            
+            {/* Widget Configuration Panel */}
+            {selectedWidget && (
+              <div className="mt-4">
+                <WidgetConfigPanel
+                  widget={selectedWidget}
+                  onUpdateWidget={updateWidget}
+                  onClose={() => setSelectedWidget(null)}
+                />
+              </div>
+            )}
           </div>
-        ))}
-      </div>
+
+          {/* Builder Canvas */}
+          <div className="lg:col-span-3">
+            <Card className="bg-gradient-card border-widget-border p-4">
+              <BuilderCanvas
+                widgets={widgets}
+                onLayoutChange={handleLayoutChange}
+                isBuilderMode={isBuilderMode}
+                sensorValues={sensorValues}
+                onWidgetUpdate={handleWidgetUpdate}
+                onWidgetEdit={setSelectedWidget}
+                onWidgetDelete={removeWidget}
+              />
+            </Card>
+          </div>
+        </div>
+      ) : (
+        /* Regular Dashboard View */
+        <BuilderCanvas
+          widgets={widgets}
+          onLayoutChange={handleLayoutChange}
+          isBuilderMode={false}
+          sensorValues={sensorValues}
+          onWidgetUpdate={handleWidgetUpdate}
+          onWidgetEdit={() => {}}
+          onWidgetDelete={() => {}}
+        />
+      )}
 
       {/* Empty State */}
       {widgets.length === 0 && (
