@@ -14,7 +14,161 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      dashboard_layout: {
+        Row: {
+          id: string
+          layout: Json
+          system_id: string | null
+        }
+        Insert: {
+          id?: string
+          layout: Json
+          system_id?: string | null
+        }
+        Update: {
+          id?: string
+          layout?: Json
+          system_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dashboard_layout_system_id_fkey"
+            columns: ["system_id"]
+            isOneToOne: false
+            referencedRelation: "systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      datastreams: {
+        Row: {
+          dir: string
+          id: string
+          key: string
+          meta: Json | null
+          system_id: string | null
+          type: string
+          unit: string | null
+        }
+        Insert: {
+          dir: string
+          id?: string
+          key: string
+          meta?: Json | null
+          system_id?: string | null
+          type: string
+          unit?: string | null
+        }
+        Update: {
+          dir?: string
+          id?: string
+          key?: string
+          meta?: Json | null
+          system_id?: string | null
+          type?: string
+          unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "datastreams_system_id_fkey"
+            columns: ["system_id"]
+            isOneToOne: false
+            referencedRelation: "systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      devices: {
+        Row: {
+          id: string
+          last_seen: number | null
+          metadata: Json | null
+          name: string
+          secret: string | null
+          status: string | null
+          system_id: string | null
+        }
+        Insert: {
+          id?: string
+          last_seen?: number | null
+          metadata?: Json | null
+          name: string
+          secret?: string | null
+          status?: string | null
+          system_id?: string | null
+        }
+        Update: {
+          id?: string
+          last_seen?: number | null
+          metadata?: Json | null
+          name?: string
+          secret?: string | null
+          status?: string | null
+          system_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "devices_system_id_fkey"
+            columns: ["system_id"]
+            isOneToOne: false
+            referencedRelation: "systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      systems: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          owner_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
+      widgets: {
+        Row: {
+          binding: Json
+          id: string
+          options: Json | null
+          system_id: string | null
+          type: string
+        }
+        Insert: {
+          binding: Json
+          id?: string
+          options?: Json | null
+          system_id?: string | null
+          type: string
+        }
+        Update: {
+          binding?: Json
+          id?: string
+          options?: Json | null
+          system_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "widgets_system_id_fkey"
+            columns: ["system_id"]
+            isOneToOne: false
+            referencedRelation: "systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
