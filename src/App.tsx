@@ -4,8 +4,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "./components/layout/AppLayout";
+import { MqttListener } from "@/lib/mqtt-listener";
 import Dashboard from "./pages/Dashboard";
 import Devices from "./pages/Devices";
+import Systems from "./pages/Systems";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -16,11 +18,13 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <MqttListener />
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<AppLayout><Dashboard /></AppLayout>} />
           <Route path="/devices" element={<AppLayout><Devices /></AppLayout>} />
+          <Route path="/systems" element={<AppLayout><Systems /></AppLayout>} />
           <Route path="/analytics" element={<AppLayout><div className="p-8 text-center text-muted-foreground">Analytics page coming soon</div></AppLayout>} />
           <Route path="/automations" element={<AppLayout><div className="p-8 text-center text-muted-foreground">Automations page coming soon</div></AppLayout>} />
           <Route path="/schedule" element={<AppLayout><div className="p-8 text-center text-muted-foreground">Schedule page coming soon</div></AppLayout>} />
